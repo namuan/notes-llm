@@ -65,9 +65,10 @@ def note_folder_path(wiki_folder: str, subfolder: str) -> str:
     return wiki_folder if not subfolder else f"{wiki_folder}/{subfolder}"
 
 
-def setup_logging(config: Config) -> None:
+def setup_logging(config: Config, debug: bool = False) -> None:
     config.log_path.parent.mkdir(parents=True, exist_ok=True)
-    logger.setLevel(logging.INFO)
+    level = logging.DEBUG if debug else logging.INFO
+    logger.setLevel(level)
     logger.handlers.clear()
     formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s")
 
@@ -83,9 +84,9 @@ def setup_logging(config: Config) -> None:
 
 
 class WikiDaemon:
-    def __init__(self, config_path: str | Path):
+    def __init__(self, config_path: str | Path, debug: bool = False):
         self.config = load_config(config_path)
-        setup_logging(self.config)
+        setup_logging(self.config, debug=debug)
         self.state = load_state(self.config.state_path)
         self.bridge = AppleNotesBridge(account=self.config.notes_account)
         self.llm = self._build_client(self.config.llm_default_profile)
@@ -310,8 +311,19 @@ class WikiDaemon:
                 + "\n\n[Truncated by daemon]"
             )
         html_body = md_to_apple_notes_html(markdown_content)
-        folder_path = note_folder_path(self.config.wiki_folder, note_update.subfolder)
-        state_key = note_state_key(note_update.subfolder, note_update.title)
+
+        subfolder = note_update.subfolder
+        valid_subfolders = set(self.config.subfolders) | {""}
+        if subfolder not in valid_subfolders:
+            logger.warning(
+                "LLM returned invalid subfolder %r for note %r; falling back to root wiki folder",
+                subfolder,
+                note_update.title,
+            )
+            subfolder = ""
+
+        folder_path = note_folder_path(self.config.wiki_folder, subfolder)
+        state_key = note_state_key(subfolder, note_update.title)
         note_meta = self.state.notes.get(state_key)
 
         if note_meta is None:
@@ -362,12 +374,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("command", choices=["ingest", "lint", "query"])
     parser.add_argument("query_text", nargs="?", default="")
     parser.add_argument("--config", default="config.yml")
+    parser.add_argument("--debug", action="store_true", help="Enable debug logging (includes LLM raw responses)")
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    daemon = WikiDaemon(args.config)
+    daemon = WikiDaemon(args.config, debug=args.debug)
     lock = acquire_lock(daemon.config.lock_path)
     if lock is None:
         logger.info("Another daemon instance is already running")

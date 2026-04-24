@@ -87,7 +87,10 @@ class AppleNotesBridge:
                 set n to note id "{self._escape_for_applescript(note_id)}"
                 set noteName to name of n
                 set noteBody to body of n
-                set noteFolder to name of container of n
+                set noteFolder to ""
+                try
+                    set noteFolder to name of container of n
+                end try
                 return noteName & "|||DELIM|||" & noteBody & "|||DELIM|||" & noteFolder
             end tell
         '''

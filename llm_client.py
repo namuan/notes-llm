@@ -215,9 +215,9 @@ Do not include any other text outside these tags.
 </wiki_updates>
 
 Rules:
-- Subfolder must be one of: Sources, Entities, Concepts, Synthesis
+- Subfolder must be one of: Sources, Entities, Concepts, Synthesis, or empty string ""
 - For update actions, output the full note content
-- Always update the _Index note using subfolder=\"\" and title=\"_Index\"
+- Always update the _Index note using subfolder="" (empty string, NOT "_Index") and title="_Index"
 - Use See: <Page Title> for cross-references
 - Keep notes focused
 - Use ## Related Notes as the final section
@@ -239,6 +239,7 @@ CURRENT WIKI STATE:
 Create a source summary note, create or update entity, concept, and synthesis pages as appropriate, and update the _Index note."""
 
     def _parse_response(self, response_text: str) -> WikiUpdates:
+        logger.debug("LLM raw response:\n%s", response_text)
         xml_text = self._extract_xml_block(response_text)
         if not xml_text:
             logger.warning("LLM response contained no <wiki_updates> block")
