@@ -7,8 +7,8 @@ subfolders:
   - "Synthesis"
 
 llm:
-  default_profile: "anthropic-sonnet"
-  lint_profile: "anthropic-sonnet"
+  default_profile: "groq"
+  lint_profile: "groq"
   profiles:
     anthropic-sonnet:
       base_url: "https://api.anthropic.com/v1/"
@@ -33,7 +33,7 @@ llm:
 
     # Any OpenAI-compatible API (e.g. Groq, Together AI, DeepSeek, LM Studio)
     groq:
-      base_url: "https://api.groq.com/openai/v1/"
+      base_url: "http://localhost:8080/v1"
       api_key_env: "GROQ_API_KEY"
       model: "llama-3.3-70b-versatile"
       max_tokens: 8192
