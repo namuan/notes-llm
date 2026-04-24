@@ -31,6 +31,13 @@ llm:
       model: "llama3.1:70b"
       max_tokens: 4096
 
+    # Any OpenAI-compatible API (e.g. Groq, Together AI, DeepSeek, LM Studio)
+    groq:
+      base_url: "https://api.groq.com/openai/v1/"
+      api_key_env: "GROQ_API_KEY"
+      model: "llama-3.3-70b-versatile"
+      max_tokens: 8192
+
 poll_interval_seconds: 30
 use_fswatch: true
 batch_mode: false
