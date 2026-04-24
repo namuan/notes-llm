@@ -289,13 +289,35 @@ class WikiDaemon:
     def apply_updates(self, updates: WikiUpdates) -> ApplyResult:
         created: list[str] = []
         updated: list[str] = []
+        state_keys_touched: list[str] = []
+
+        # Pass 1: create/update all notes (links may be unresolved for same-batch notes)
         for note_update in updates.notes:
             applied = self._apply_single_update(note_update)
+            subfolder = note_update.subfolder
+            if subfolder not in (set(self.config.subfolders) | {""}):
+                subfolder = ""
+            state_keys_touched.append(note_state_key(subfolder, note_update.title))
             if applied == "create":
                 created.append(note_update.path)
             else:
                 updated.append(note_update.path)
         self.save_state()
+
+        # Pass 2: re-resolve links now that all batch notes exist in state
+        for key in state_keys_touched:
+            meta = self.state.notes.get(key)
+            if not meta or not meta.get("apple_notes_id"):
+                continue
+            try:
+                note = self.bridge.read_note(meta["apple_notes_id"])
+                resolved = self._resolve_note_links(note["body"])
+                if resolved != note["body"]:
+                    self.bridge.update_note(meta["apple_notes_id"], resolved)
+                    logger.debug("Re-resolved links in %s", key)
+            except AppleScriptError as exc:
+                logger.warning("Failed to re-resolve links in %s: %s", key, exc)
+
         return ApplyResult(created=created, updated=updated)
 
     def _resolve_note_links(self, html_body: str) -> str:

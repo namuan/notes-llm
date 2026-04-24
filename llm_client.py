@@ -253,7 +253,9 @@ Instructions:
 
 4. SYNTHESIS NOTE (subfolder="Synthesis"): If this document connects meaningfully with existing wiki content, create or update a synthesis note that draws out the cross-document insight.
 
-5. Update the _Index note (subfolder="", title="_Index") with any new pages created."""
+5. CROSS-REFERENCES: In the ## Related Notes section of every note you create or update, add `See: <Exact Title>` lines referencing the other notes you are creating in this same batch, as well as any relevant existing wiki pages. Use the exact title you are giving each note.
+
+6. Update the _Index note (subfolder="", title="_Index") with any new pages created."""
 
     def _parse_response(self, response_text: str) -> WikiUpdates:
         logger.debug("LLM raw response:\n%s", response_text)
