@@ -408,31 +408,34 @@ class WikiDaemon:
     def run_reprocess(self) -> None:
         self.ensure_local_dirs()
 
-        # Step 1: delete all wiki notes from Apple Notes (with confirmation)
+        # Step 1: delete all wiki notes from Apple Notes (prompt once per folder)
         all_folders = [self.config.wiki_folder] + [
             f"{self.config.wiki_folder}/{sub}" for sub in self.config.subfolders
         ]
-        notes_to_delete: list[dict[str, str]] = []
         for folder_path in all_folders:
             try:
-                notes_to_delete.extend(self.bridge.list_notes(folder_path))
+                notes = self.bridge.list_notes(folder_path)
             except AppleScriptError as exc:
                 logger.warning("Could not list notes in %s: %s", folder_path, exc)
+                continue
 
-        if not notes_to_delete:
-            print("No notes found in wiki folders.")
-        else:
-            print(f"Found {len(notes_to_delete)} note(s) in wiki folders.")
-            for note in notes_to_delete:
-                answer = input(f"  Delete '{note['name']}'? [y/N] ").strip().lower()
-                if answer == "y":
+            if not notes:
+                print(f"\nFolder '{folder_path}': no notes, skipping.")
+                continue
+
+            print(f"\nFolder '{folder_path}' contains {len(notes)} note(s):")
+            for note in notes:
+                print(f"  - {note['name']}")
+            answer = input(f"Delete all {len(notes)} note(s) in '{folder_path}'? [y/N] ").strip().lower()
+            if answer == "y":
+                for note in notes:
                     try:
                         self.bridge.delete_note(note["id"])
-                        print(f"    Deleted '{note['name']}'")
                     except AppleScriptError as exc:
                         logger.warning("Failed to delete '%s': %s", note["name"], exc)
-                else:
-                    print(f"    Skipped '{note['name']}'")
+                print(f"  Deleted {len(notes)} note(s).")
+            else:
+                print(f"  Skipped '{folder_path}'.")
 
         # Step 2: reset state
         self.state = WikiState()
