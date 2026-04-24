@@ -16,7 +16,7 @@ from config_loader import Config, load_config
 from file_extractor import extract_content
 from html_converter import html_to_plaintext, md_to_apple_notes_html
 from llm_client import LLMClient, NoteUpdate, WikiUpdates
-from state_manager import WikiState, acquire_lock, load_state, save_state
+from state_manager import acquire_lock, load_state, save_state
 
 
 logger = logging.getLogger("wiki-daemon")
@@ -59,6 +59,10 @@ def is_file_stable(filepath: Path, wait_seconds: float = 2.0) -> bool:
 
 def note_state_key(subfolder: str, title: str) -> str:
     return f"{subfolder}/{title}" if subfolder else title
+
+
+def note_folder_path(wiki_folder: str, subfolder: str) -> str:
+    return wiki_folder if not subfolder else f"{wiki_folder}/{subfolder}"
 
 
 def setup_logging(config: Config) -> None:
@@ -132,11 +136,7 @@ class WikiDaemon:
         key = note_state_key(subfolder, title)
         if key in self.state.notes:
             return
-        folder_path = (
-            self.config.wiki_folder
-            if not subfolder
-            else f"{self.config.wiki_folder}/{subfolder}"
-        )
+        folder_path = note_folder_path(self.config.wiki_folder, subfolder)
         note_id = self.bridge.create_note(
             folder_path, title, md_to_apple_notes_html(markdown_content)
         )
@@ -310,11 +310,7 @@ class WikiDaemon:
                 + "\n\n[Truncated by daemon]"
             )
         html_body = md_to_apple_notes_html(markdown_content)
-        folder_path = (
-            self.config.wiki_folder
-            if not note_update.subfolder
-            else f"{self.config.wiki_folder}/{note_update.subfolder}"
-        )
+        folder_path = note_folder_path(self.config.wiki_folder, note_update.subfolder)
         state_key = note_state_key(note_update.subfolder, note_update.title)
         note_meta = self.state.notes.get(state_key)
 

@@ -26,8 +26,8 @@ Background macOS daemon that ingests files from a local folder, asks an LLM for 
 Run `./install.sh` to:
 
 - create `~/Wiki/{inbox,processed,cache/extracted}`
-- copy `config.sample.yml` to `~/Wiki/config.yml`
-- copy the default schema to `~/Wiki/schema.md`
+- copy `config.sample.yml` to `~/Wiki/config.yml` if missing
+- copy the default schema to `~/Wiki/schema.md` if missing
 - initialize `~/Wiki/state.json`
 - create the local `.venv` with `uv sync`
 - render launchd plist files into `~/Library/LaunchAgents`

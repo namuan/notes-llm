@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-import os
 
 import yaml
 
@@ -68,6 +67,13 @@ def _load_dotenv_if_present(base_dir: Path) -> None:
         load_dotenv(dotenv_path=dotenv_path, override=False)
 
 
+def _resolve_path(base_dir: Path, value: str) -> Path:
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = base_dir / path
+    return path.resolve()
+
+
 def load_config(config_path: str | Path) -> Config:
     config_file = Path(config_path).expanduser().resolve()
     base_dir = config_file.parent
@@ -91,7 +97,7 @@ def load_config(config_path: str | Path) -> Config:
         )
     )
 
-    lock_path = raw.get("lock_path") or str(base_dir / ".lock")
+    lock_path = raw.get("lock_path", ".lock")
 
     return Config(
         base_dir=base_dir,
@@ -112,19 +118,11 @@ def load_config(config_path: str | Path) -> Config:
         max_file_size_mb=int(raw.get("max_file_size_mb", 10)),
         max_note_length_chars=int(raw.get("max_note_length_chars", 30000)),
         cross_reference_style=raw.get("cross_reference_style", "inline"),
-        state_path=(base_dir / raw.get("state_path", "state.json")).resolve()
-        if not os.path.isabs(raw.get("state_path", "state.json"))
-        else Path(raw["state_path"]).expanduser().resolve(),
-        schema_path=(base_dir / raw.get("schema_path", "schema.md")).resolve()
-        if not os.path.isabs(raw.get("schema_path", "schema.md"))
-        else Path(raw["schema_path"]).expanduser().resolve(),
-        lock_path=(base_dir / lock_path).resolve()
-        if not os.path.isabs(lock_path)
-        else Path(lock_path).expanduser().resolve(),
+        state_path=_resolve_path(base_dir, raw.get("state_path", "state.json")),
+        schema_path=_resolve_path(base_dir, raw.get("schema_path", "schema.md")),
+        lock_path=_resolve_path(base_dir, lock_path),
         inbox_dir=(base_dir / "inbox").resolve(),
         processed_dir=(base_dir / "processed").resolve(),
         cache_dir=(base_dir / "cache").resolve(),
-        log_path=(base_dir / raw.get("log_path", "daemon.log")).resolve()
-        if not os.path.isabs(raw.get("log_path", "daemon.log"))
-        else Path(raw["log_path"]).expanduser().resolve(),
+        log_path=_resolve_path(base_dir, raw.get("log_path", "daemon.log")),
     )

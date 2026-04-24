@@ -17,8 +17,13 @@ echo "Wiki home: $WIKI_DIR"
 
 mkdir -p "$WIKI_DIR/inbox" "$WIKI_DIR/processed" "$WIKI_DIR/cache/extracted" "$LAUNCH_AGENTS"
 
-cp "$SCRIPT_DIR/config.sample.yml" "$WIKI_DIR/config.yml"
-cp "$SCRIPT_DIR/schema_templates/general.md" "$WIKI_DIR/schema.md"
+if [ ! -f "$WIKI_DIR/config.yml" ]; then
+  cp "$SCRIPT_DIR/config.sample.yml" "$WIKI_DIR/config.yml"
+fi
+
+if [ ! -f "$WIKI_DIR/schema.md" ]; then
+  cp "$SCRIPT_DIR/schema_templates/general.md" "$WIKI_DIR/schema.md"
+fi
 
 if [ ! -f "$WIKI_DIR/state.json" ]; then
   printf '%s\n' '{"version":1,"last_run":"","last_lint":"","notes":{},"processed_files":{},"folders_created":[]}' > "$WIKI_DIR/state.json"
