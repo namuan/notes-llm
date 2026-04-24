@@ -321,10 +321,9 @@ class WikiDaemon:
         return ApplyResult(created=created, updated=updated)
 
     def _resolve_note_links(self, html_body: str) -> str:
-        """Replace 'See: <Title>' patterns with clickable Apple Notes links."""
+        """Replace [[Title]] wiki-link patterns with clickable Apple Notes links."""
         def replace_match(m: re.Match) -> str:
             title = m.group(1).strip()
-            # Find the note_id for this title by scanning state (any subfolder)
             for key, meta in self.state.notes.items():
                 stored_title = key.split("/", 1)[-1] if "/" in key else key
                 if stored_title == title:
@@ -332,12 +331,12 @@ class WikiDaemon:
                     if note_id:
                         try:
                             url = self.bridge.get_note_url(note_id)
-                            return f'See: <a href="{url}">{title}</a>'
+                            return f'<a href="{url}">{title}</a>'
                         except AppleScriptError:
                             pass
-            return m.group(0)
+            return title  # fall back to plain text if note not found
 
-        return re.sub(r"See:\s+([^\n<]+?)(?=\s*<|\s*$)", replace_match, html_body)
+        return re.sub(r"\[\[([^\]]+)\]\]", replace_match, html_body)
 
     def _apply_single_update(self, note_update: NoteUpdate) -> str:
         markdown_content = note_update.markdown_content.strip()

@@ -218,9 +218,8 @@ Rules:
 - Subfolder must be one of: Sources, Entities, Concepts, Synthesis, or empty string ""
 - For update actions, output the full note content
 - Always update the _Index note using subfolder="" (empty string, NOT "_Index") and title="_Index"
-- Use See: <Page Title> for cross-references
-- Be thorough and comprehensive — prefer more detail over less
-- Use ## Related Notes as the final section
+- Use [[Page Title]] syntax for all cross-references to other wiki notes (inline in text, not on a separate line)
+- Use ## Related Notes as the final section, listing related notes as [[Title]] links
 """
 
     def _build_ingest_message(
@@ -253,7 +252,7 @@ Instructions:
 
 4. SYNTHESIS NOTE (subfolder="Synthesis"): If this document connects meaningfully with existing wiki content, create or update a synthesis note that draws out the cross-document insight.
 
-5. CROSS-REFERENCES: In the ## Related Notes section of every note you create or update, add `See: <Exact Title>` lines referencing the other notes you are creating in this same batch, as well as any relevant existing wiki pages. Use the exact title you are giving each note.
+5. CROSS-REFERENCES: Embed `[[Exact Title]]` links inline throughout the text wherever another wiki note is relevant — in the body paragraphs, not just in ## Related Notes. Also list all related notes in the ## Related Notes section as `[[Title]]` links. Use the exact title you are giving each note.
 
 6. Update the _Index note (subfolder="", title="_Index") with any new pages created."""
 

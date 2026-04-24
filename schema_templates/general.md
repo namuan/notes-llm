@@ -16,7 +16,7 @@ This wiki tracks a personal knowledge base curated from documents dropped into t
 - Related Notes
 
 ## Cross-References
-Use `See: <Page Title>` inline and include a final `## Related Notes` section.
+Use `[[Page Title]]` inline in text to link to other wiki notes. Include a final `## Related Notes` section listing related notes as `[[Title]]` links.
 
 ## Index Format
 The `_Index` note should list wiki pages by subfolder with a one-line description for each.
