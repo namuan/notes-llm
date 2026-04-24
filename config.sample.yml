@@ -1,0 +1,51 @@
+notes_account: "iCloud"
+wiki_folder: "Wiki"
+subfolders:
+  - "Sources"
+  - "Entities"
+  - "Concepts"
+  - "Synthesis"
+
+llm:
+  default_profile: "anthropic-sonnet"
+  lint_profile: "anthropic-sonnet"
+  profiles:
+    anthropic-sonnet:
+      base_url: "https://api.anthropic.com/v1/"
+      api_key_env: "ANTHROPIC_API_KEY"
+      model: "claude-sonnet-4-20250514"
+      max_tokens: 8192
+      extra_headers:
+        anthropic-version: "2023-06-01"
+
+    openai:
+      base_url: "https://api.openai.com/v1/"
+      api_key_env: "OPENAI_API_KEY"
+      model: "gpt-4o"
+      max_tokens: 8192
+
+    ollama:
+      base_url: "http://localhost:11434/v1/"
+      api_key_env: ""
+      api_key_value: "ollama"
+      model: "llama3.1:70b"
+      max_tokens: 4096
+
+poll_interval_seconds: 30
+use_fswatch: true
+batch_mode: false
+
+lint_enabled: true
+lint_hour: 3
+
+supported_extensions:
+  - ".md"
+  - ".txt"
+  - ".pdf"
+  - ".html"
+  - ".csv"
+  - ".json"
+
+max_file_size_mb: 10
+max_note_length_chars: 30000
+cross_reference_style: "inline"
