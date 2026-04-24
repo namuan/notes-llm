@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.user.wiki-lint</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/python3</string>
+        <string>/Users/USERNAME/Wiki/daemon.py</string>
+        <string>lint</string>
+        <string>--config</string>
+        <string>/Users/USERNAME/Wiki/config.yml</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>3</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+    <key>WorkingDirectory</key>
+    <string>/Users/USERNAME/Wiki</string>
+    <key>StandardOutPath</key>
+    <string>/Users/USERNAME/Wiki/lint.stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/USERNAME/Wiki/lint.stderr.log</string>
+</dict>
+</plist>

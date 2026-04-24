@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.user.wiki-daemon</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/python3</string>
+        <string>/Users/USERNAME/Wiki/daemon.py</string>
+        <string>ingest</string>
+        <string>--config</string>
+        <string>/Users/USERNAME/Wiki/config.yml</string>
+    </array>
+    <key>WatchPaths</key>
+    <array>
+        <string>/Users/USERNAME/Wiki/inbox</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Users/USERNAME/Wiki</string>
+    <key>StandardOutPath</key>
+    <string>/Users/USERNAME/Wiki/daemon.stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/USERNAME/Wiki/daemon.stderr.log</string>
+    <key>Nice</key>
+    <integer>10</integer>
+</dict>
+</plist>
