@@ -219,7 +219,7 @@ Rules:
 - For update actions, output the full note content
 - Always update the _Index note using subfolder="" (empty string, NOT "_Index") and title="_Index"
 - Use See: <Page Title> for cross-references
-- Keep notes focused
+- Be thorough and comprehensive — prefer more detail over less
 - Use ## Related Notes as the final section
 """
 
@@ -236,7 +236,24 @@ SOURCE CONTENT:
 CURRENT WIKI STATE:
 {wiki_context}
 
-Create a source summary note, create or update entity, concept, and synthesis pages as appropriate, and update the _Index note."""
+Instructions:
+1. SOURCE SUMMARY (subfolder="Sources"): Write a thorough, detailed note covering:
+   - A 2-3 paragraph executive summary of the document
+   - All major arguments, findings, or claims — use ## sections for each major theme
+   - Methodology or approach (if applicable)
+   - Key data points, statistics, or evidence cited
+   - Limitations, caveats, or open questions raised by the authors
+   - Practical implications or takeaways
+   - Direct quotes or paraphrases of the most important passages (use > blockquote markdown)
+   - Full bibliographic info if available (authors, year, publication)
+
+2. ENTITY NOTES (subfolder="Entities"): For each significant person, organisation, system, or product mentioned — create or update a note with: who/what they are, their role in this document, and links to other relevant wiki pages.
+
+3. CONCEPT NOTES (subfolder="Concepts"): For each significant idea, theory, technique, or term — create or update a detailed note with: definition, how the source explains or uses it, nuances, and connections to other concepts.
+
+4. SYNTHESIS NOTE (subfolder="Synthesis"): If this document connects meaningfully with existing wiki content, create or update a synthesis note that draws out the cross-document insight.
+
+5. Update the _Index note (subfolder="", title="_Index") with any new pages created."""
 
     def _parse_response(self, response_text: str) -> WikiUpdates:
         logger.debug("LLM raw response:\n%s", response_text)
