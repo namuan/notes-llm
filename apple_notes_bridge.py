@@ -166,3 +166,11 @@ class AppleNotesBridge:
             note_id, name = line.split("|||", 1)
             matches.append({"id": note_id.strip(), "name": name.strip()})
         return matches
+
+    def get_note_url(self, note_id: str) -> str:
+        script = f'''
+            tell application "Notes"
+                return note url of note id "{self._escape_for_applescript(note_id)}"
+            end tell
+        '''
+        return self._run_applescript(script)

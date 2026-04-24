@@ -7,6 +7,7 @@ import hashlib
 import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
+import re
 import shutil
 import sys
 import time
@@ -16,7 +17,7 @@ from config_loader import Config, load_config
 from file_extractor import extract_content
 from html_converter import html_to_plaintext, md_to_apple_notes_html
 from llm_client import LLMClient, NoteUpdate, WikiUpdates
-from state_manager import acquire_lock, load_state, save_state
+from state_manager import WikiState, acquire_lock, load_state, save_state
 
 
 logger = logging.getLogger("wiki-daemon")
@@ -297,6 +298,25 @@ class WikiDaemon:
         self.save_state()
         return ApplyResult(created=created, updated=updated)
 
+    def _resolve_note_links(self, html_body: str) -> str:
+        """Replace 'See: <Title>' patterns with clickable Apple Notes links."""
+        def replace_match(m: re.Match) -> str:
+            title = m.group(1).strip()
+            # Find the note_id for this title by scanning state (any subfolder)
+            for key, meta in self.state.notes.items():
+                stored_title = key.split("/", 1)[-1] if "/" in key else key
+                if stored_title == title:
+                    note_id = meta.get("apple_notes_id", "")
+                    if note_id:
+                        try:
+                            url = self.bridge.get_note_url(note_id)
+                            return f'See: <a href="{url}">{title}</a>'
+                        except AppleScriptError:
+                            pass
+            return m.group(0)
+
+        return re.sub(r"See:\s+([^\n<]+?)(?=\s*<|\s*$)", replace_match, html_body)
+
     def _apply_single_update(self, note_update: NoteUpdate) -> str:
         markdown_content = note_update.markdown_content.strip()
         if len(markdown_content) > self.config.max_note_length_chars:
@@ -305,6 +325,7 @@ class WikiDaemon:
                 + "\n\n[Truncated by daemon]"
             )
         html_body = md_to_apple_notes_html(markdown_content)
+        html_body = self._resolve_note_links(html_body)
 
         subfolder = note_update.subfolder
         valid_subfolders = set(self.config.subfolders) | {""}
@@ -363,9 +384,70 @@ class WikiDaemon:
         self.save_state()
 
 
+    def run_reprocess(self) -> None:
+        self.ensure_local_dirs()
+
+        # Step 1: delete all wiki notes from Apple Notes (with confirmation)
+        all_folders = [self.config.wiki_folder] + [
+            f"{self.config.wiki_folder}/{sub}" for sub in self.config.subfolders
+        ]
+        notes_to_delete: list[dict[str, str]] = []
+        for folder_path in all_folders:
+            try:
+                notes_to_delete.extend(self.bridge.list_notes(folder_path))
+            except AppleScriptError as exc:
+                logger.warning("Could not list notes in %s: %s", folder_path, exc)
+
+        if not notes_to_delete:
+            print("No notes found in wiki folders.")
+        else:
+            print(f"Found {len(notes_to_delete)} note(s) in wiki folders.")
+            for note in notes_to_delete:
+                answer = input(f"  Delete '{note['name']}'? [y/N] ").strip().lower()
+                if answer == "y":
+                    try:
+                        self.bridge.delete_note(note["id"])
+                        print(f"    Deleted '{note['name']}'")
+                    except AppleScriptError as exc:
+                        logger.warning("Failed to delete '%s': %s", note["name"], exc)
+                else:
+                    print(f"    Skipped '{note['name']}'")
+
+        # Step 2: reset state
+        self.state = WikiState()
+        self.save_state()
+        logger.info("State reset.")
+
+        # Step 3: move processed files back to inbox
+        moved = 0
+        for filename in sorted(self.config.processed_dir.iterdir()):
+            if not filename.is_file():
+                continue
+            if filename.suffix.lower() not in self.config.supported_extensions:
+                continue
+            # Strip the date prefix added during ingest (YYYY-MM-DD_original.ext)
+            original_name = re.sub(r"^\d{4}-\d{2}-\d{2}_", "", filename.name)
+            destination = self.config.inbox_dir / original_name
+            # Avoid collisions
+            counter = 1
+            while destination.exists():
+                destination = self.config.inbox_dir / f"{destination.stem}_{counter}{destination.suffix}"
+                counter += 1
+            shutil.move(str(filename), destination)
+            logger.info("Moved %s -> inbox/%s", filename.name, destination.name)
+            moved += 1
+
+        print(f"Moved {moved} file(s) back to inbox.")
+
+        # Step 4: run ingest
+        print("Starting ingest...")
+        self.ensure_folders_exist()
+        self.run_ingest()
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Apple Notes Wiki Daemon")
-    parser.add_argument("command", choices=["ingest", "lint", "query"])
+    parser.add_argument("command", choices=["ingest", "lint", "query", "reprocess"])
     parser.add_argument("query_text", nargs="?", default="")
     parser.add_argument("--config", default="config.yml")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging (includes LLM raw responses)")
@@ -385,6 +467,8 @@ def main(argv: list[str] | None = None) -> int:
             daemon.run_ingest()
         elif args.command == "lint":
             daemon.run_lint()
+        elif args.command == "reprocess":
+            daemon.run_reprocess()
         else:
             print(daemon.run_query(args.query_text))
         return 0
