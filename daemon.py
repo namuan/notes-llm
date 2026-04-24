@@ -149,9 +149,6 @@ class WikiDaemon:
         self.save_state()
 
     def scan_inbox(self) -> list[Path]:
-        known_hashes = {
-            entry.get("file_hash", "") for entry in self.state.processed_files.values()
-        }
         files: list[Path] = []
         for path in sorted(
             self.config.inbox_dir.iterdir(), key=lambda item: item.stat().st_mtime
@@ -167,9 +164,6 @@ class WikiDaemon:
                 continue
             if self.config.use_fswatch and not is_file_stable(path):
                 logger.info("Skipping %s because it is still being written", path.name)
-                continue
-            file_hash = hash_file(path)
-            if file_hash in known_hashes:
                 continue
             files.append(path)
             if not self.config.batch_mode:
