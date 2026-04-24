@@ -4,26 +4,27 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.user.wiki-daemon</string>
+    <string>com.github.namuan.wiki-lint</string>
     <key>ProgramArguments</key>
     <array>
         <string>/usr/local/bin/python3</string>
         <string>/Users/USERNAME/Wiki/daemon.py</string>
-        <string>ingest</string>
+        <string>lint</string>
         <string>--config</string>
         <string>/Users/USERNAME/Wiki/config.yml</string>
     </array>
-    <key>WatchPaths</key>
-    <array>
-        <string>/Users/USERNAME/Wiki/inbox</string>
-    </array>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>3</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
     <key>WorkingDirectory</key>
     <string>/Users/USERNAME/Wiki</string>
     <key>StandardOutPath</key>
-    <string>/Users/USERNAME/Wiki/daemon.stdout.log</string>
+    <string>/Users/USERNAME/Wiki/lint.stdout.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/USERNAME/Wiki/daemon.stderr.log</string>
-    <key>Nice</key>
-    <integer>10</integer>
+    <string>/Users/USERNAME/Wiki/lint.stderr.log</string>
 </dict>
 </plist>

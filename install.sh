@@ -36,12 +36,12 @@ PYTHON_PATH="$SCRIPT_DIR/.venv/bin/python"
 sed \
   -e "s|/usr/local/bin/python3|$PYTHON_PATH|g" \
   -e "s|/Users/USERNAME/Wiki|$WIKI_DIR|g" \
-  "$SCRIPT_DIR/launchd/com.user.wiki-daemon.plist" > "$LAUNCH_AGENTS/com.user.wiki-daemon.plist"
+  "$SCRIPT_DIR/launchd/com.github.namuan.wiki-daemon.plist" > "$LAUNCH_AGENTS/com.github.namuan.wiki-daemon.plist"
 
 sed \
   -e "s|/usr/local/bin/python3|$PYTHON_PATH|g" \
   -e "s|/Users/USERNAME/Wiki|$WIKI_DIR|g" \
-  "$SCRIPT_DIR/launchd/com.user.wiki-lint.plist" > "$LAUNCH_AGENTS/com.user.wiki-lint.plist"
+  "$SCRIPT_DIR/launchd/com.github.namuan.wiki-lint.plist" > "$LAUNCH_AGENTS/com.github.namuan.wiki-lint.plist"
 
 echo
 echo "Files created:"
@@ -53,7 +53,7 @@ echo "Next steps:"
 echo "1. Edit $WIKI_DIR/config.yml"
 echo "2. Add API keys to $WIKI_DIR/.env or your shell environment"
 echo "3. Start the agents with:"
-echo "   launchctl load $LAUNCH_AGENTS/com.user.wiki-daemon.plist"
-echo "   launchctl load $LAUNCH_AGENTS/com.user.wiki-lint.plist"
+echo "   launchctl load $LAUNCH_AGENTS/com.github.namuan.wiki-daemon.plist"
+echo "   launchctl load $LAUNCH_AGENTS/com.github.namuan.wiki-lint.plist"
 echo
 echo "First run will require allowing Python to control Notes.app in macOS Automation settings."
